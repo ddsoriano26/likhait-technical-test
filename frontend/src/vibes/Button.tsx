@@ -6,7 +6,7 @@ import React from "react";
 import { COLORS } from "../constants/colors";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "danger" | "success";
+  variant?: "primary" | "secondary" | "danger" | "success" | "neutral";
   size?: "small" | "medium" | "large";
   fullWidth?: boolean;
 }
@@ -45,6 +45,12 @@ export function Button({
           color: "white",
           border: "none",
         };
+      case "neutral":
+        return {
+          backgroundColor: "white",
+          color: "black",
+          border: "none",
+        }
     }
   };
 
