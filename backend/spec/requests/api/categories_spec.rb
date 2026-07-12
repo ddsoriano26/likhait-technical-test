@@ -2,9 +2,9 @@ require 'rails_helper'
 
 RSpec.describe "Api::Categories", type: :request do
   describe "GET /api/categories" do
-    let!(:food) { Category.create!(name: "Food") }
-    let!(:transport) { Category.create!(name: "Transport") }
-    let!(:supplies) { Category.create!(name: "Supplies") }
+    let!(:food) { Category.create!(name: "Food", emoji: "🍔") }
+    let!(:transport) { Category.create!(name: "Transport", emoji: "🚗") }
+    let!(:supplies) { Category.create!(name: "Supplies", emoji: "📦") }
 
     it "returns all categories" do
       get "/api/categories"
@@ -57,7 +57,7 @@ RSpec.describe "Api::Categories", type: :request do
 
         expect {
           post "/api/categories", params: invalid_params, as: :json
-        }.to_not change(Category, :count).by(1)
+        }.to_not change(Category, :count)
 
         expect(response).to have_http_status(:unprocessable_entity)
       end
@@ -72,7 +72,7 @@ RSpec.describe "Api::Categories", type: :request do
 
         expect {
           post "/api/categories", params: invalid_params, as: :json
-        }.to_not change(Category, :count).by(1)
+        }.to_not change(Category, :count)
 
         expect(response).to have_http_status(:unprocessable_entity)
       end
