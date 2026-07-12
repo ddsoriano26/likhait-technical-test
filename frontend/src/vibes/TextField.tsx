@@ -9,12 +9,14 @@ interface TextFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   fullWidth?: boolean;
+  noBorder?: boolean;
 }
 
 export function TextField({
   label,
   error,
   fullWidth = false,
+  noBorder = false,
   ...props
 }: TextFieldProps) {
   const containerStyle: React.CSSProperties = {
@@ -33,7 +35,7 @@ export function TextField({
   const inputStyle: React.CSSProperties = {
     padding: "0.5rem 0.75rem",
     fontSize: "1rem",
-    border: `1px solid ${error ? COLORS.danger : COLORS.border}`,
+    border: noBorder ? 'none' : `1px solid ${error ? COLORS.danger : COLORS.border}`,
     borderRadius: "0.375rem",
     outline: "none",
     transition: "border-color 0.2s",
