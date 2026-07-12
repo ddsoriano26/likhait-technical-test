@@ -1,9 +1,11 @@
 /**
- * Custom hook for managing expense form state and validation
+ * Custom hook for managing and validating category form
+ * Used useExpenseForm as blueprint
  */
 
-import { useState } from "react";
-import { CategoryFormData } from "../types";
+import { useEffect, useState } from "react";
+import { Category, CategoryFormData } from "../types";
+import { fetchCategories } from "../services/api";
 
 interface UseCategoryFormProps {
   initialData?: Partial<CategoryFormData>;
@@ -16,30 +18,54 @@ export function useCategoryForm({ initialData, onSubmit }: UseCategoryFormProps)
       emoji: initialData?.emoji || "",
     });
 
-  const [errors, setErrors] = useState<Partial<CategoryFormData>>({});
+  const [error, setError] = useState(""); // Single error message to be put in "custom input" component
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [categories, setCategories] = useState<Category[] | null>();
+
+  // Fetch available categories for double-checking duplicates
+  useEffect(() => {
+    const loadCategories = async() => {
+      try {
+        const data = await fetchCategories();
+        setCategories(data);
+      } catch(err) {
+        console.error("Failed to load categories:", err);
+      }
+    }
+    loadCategories();
+  }, [])
 
   const handleChange = (field: keyof CategoryFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error for this field when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    if (error) {
+      setError("");
     }
   };
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<CategoryFormData> = {};
-
+    const categoryNames = categories?.map(cat => {return cat.name});
+    
+    // Require category name
     if (!formData.name.trim()) {
-      newErrors.name = "Category name is required!";
+      setError("Category name is required!");
+      return false
+    }
+    
+    // Check if category name is a duplicate
+    if (categoryNames?.includes(formData.name)) {
+      setError("Category name already exists!");
+      return false
     }
 
+    // Require emoji
     if (!formData.emoji.trim()) {
-      newErrors.emoji = "Choose an emoji!";
+      setError("Choose an emoji!");
+      return false
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,7 +83,7 @@ export function useCategoryForm({ initialData, onSubmit }: UseCategoryFormProps)
         name: "",
         emoji: "",
       });
-      setErrors({});
+      setError("");
     } catch (error) {
       console.error("Form submission error:", error);
     } finally {
@@ -70,12 +96,12 @@ export function useCategoryForm({ initialData, onSubmit }: UseCategoryFormProps)
       name: initialData?.name || "",
       emoji: initialData?.emoji || "",
     });
-    setErrors({});
+    setError("");
   };
 
   return {
     formData,
-    errors,
+    error,
     isSubmitting,
     handleChange,
     handleSubmit,

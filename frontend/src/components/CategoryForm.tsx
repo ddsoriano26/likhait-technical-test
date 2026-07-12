@@ -2,12 +2,11 @@
  * Form component for adding/editing expenses
  */
 
-import React, { useEffect, useState } from "react";
-import { Category, CategoryFormData } from "../types";
+import React, { useState } from "react";
+import { CategoryFormData } from "../types";
 import { TextField, Button } from "../vibes";
 import EmojiPicker from 'emoji-picker-react';
 import { COLORS } from "../constants/colors";
-import { fetchCategories } from "../services/api";
 import { useCategoryForm } from "../hooks/useCategoryForm";
 
 interface ExpenseFormProps {
@@ -23,16 +22,13 @@ export function CategoryForm({
   onCancel,
   submitLabel = "Add Category",
 }: ExpenseFormProps) {
-  const { formData, errors, isSubmitting, handleChange, handleSubmit } =
+  const { formData, error, isSubmitting, handleChange, handleSubmit } =
     useCategoryForm({
       initialData,
       onSubmit,
     });
 
-  const [emoji, setEmoji] = useState("");
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
-
-  const [categories, setCategories] = useState<Category[] | null>();
 
   const formStyle: React.CSSProperties = {
     display: "flex",
@@ -46,12 +42,12 @@ export function CategoryForm({
     marginTop: "0.5rem",
   };
 
+  // Single row meant to look like a single "input" field containing button for emoji picker + category name text field
   const rowStyle: React.CSSProperties = {
     display: "flex",
     flex: "row",
     alignItems: "end",
-    // border: `1px solid ${errors ? COLORS.danger : COLORS.border}`,
-    border: `1px solid ${COLORS.border}`,
+    border: `1px solid ${error ? COLORS.danger : COLORS.border}`,
     borderRadius: "0.375rem",
     padding: "1px",
   };
@@ -61,55 +57,51 @@ export function CategoryForm({
     zIndex: 10,
   };
 
-  useEffect(() => {
-    const getCategories = async() => {
-      const allCategories = await fetchCategories()
-      setCategories(allCategories)
-      // return allCategories
-    }
-    getCategories()
-  }, [])
-
-  useEffect(() => {
-    console.log(categories)
-  }, [categories])
+  // Set error message style
+  const errorStyle: React.CSSProperties = {
+    color: `${COLORS.danger}`,
+    fontSize: "0.875rem",
+    display: "block",
+  }
 
   return (
     <form onSubmit={handleSubmit} style={formStyle}>
-      <div style={rowStyle}>
-        <Button
-          aria-label="Emoji"
-          // size="medium"
-          variant="neutral"
-          onClick={() => setEmojiPickerOpen(true)}
-          title="Choose emoji"
-        >
-          {emoji ? emoji : "➕"}
-        </Button>
-        <TextField
-          type="text"
-          placeholder="Enter category name and choose emoji"
-          value={formData.name}
-          onChange={(e) => handleChange("name", e.target.value)}
-          error={errors.name}
-          fullWidth
-          required
-          noBorder
-        />
-      </div>
-
-      {emojiPickerOpen && (
-        <div style={pickerStyle}>
-          <EmojiPicker
-            onEmojiClick={(emojiObject) => {
-              setEmoji(emojiObject.emoji);
-              setEmojiPickerOpen(false);
-              handleChange("emoji", emojiObject.emoji);
-            }}
-            />
+      <div>
+        <div style={rowStyle}>
+          <Button
+            aria-label="Emoji"
+            variant="neutral"
+            onClick={() => setEmojiPickerOpen(true)}
+            title="Choose emoji"
+          >
+            {formData.emoji ? formData.emoji : "➕"}
+          </Button>
+          <TextField
+            type="text"
+            placeholder="Enter category name and choose emoji"
+            value={formData.name}
+            onChange={(e) => handleChange("name", e.target.value)}
+            fullWidth
+            required
+            noBorder
+          />
+          {emojiPickerOpen && (
+            <div style={pickerStyle}>
+              <EmojiPicker
+                onEmojiClick={(emojiObject) => {
+                  setEmojiPickerOpen(false);
+                  handleChange("emoji", emojiObject.emoji);
+                }}
+                />
+            </div>
+          )}
         </div>
-        
-      )}
+        {error && (
+          <span style={errorStyle}>
+            {error}
+          </span>
+        )}
+      </div>
 
       <div style={buttonGroupStyle}>
         <Button
