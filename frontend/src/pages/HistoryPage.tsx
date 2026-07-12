@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getExpenses, createExpense } from "../services/api";
+import { getExpenses, createExpense, createCategory, fetchCategories } from "../services/api";
 import { CategoryFormData, Expense, ExpenseFormData } from "../types";
 import YearNavigation from "../components/YearNavigation";
 import { MonthNavigation } from "../components/MonthNavigation";
@@ -85,8 +85,14 @@ const HistoryPage: React.FC = () => {
   };
 
   const handleAddCategory = async (data: CategoryFormData) => {
-    // console.log("test")
-    console.log(data);
+    try {
+      await createCategory(data);
+      setIsCategoriesModalOpen(false);
+      fetchCategories();
+    } catch (error) {
+      console.error("Error creating category:", error);
+      throw error;
+    }
   };
 
   // Calculate category breakdown
